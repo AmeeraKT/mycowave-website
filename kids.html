@@ -74,7 +74,7 @@ MycoWave
 <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 28px; font-weight: 500; font-size: 20px">
 <a href="#what" style="color: #1A0B2E; text-decoration: none">What is it?</a>
 <a href="#facts" style="color: #1A0B2E; text-decoration: none">Fun facts</a>
-<a href="#listen" class="pill" style="background: #C3D85A; color: #1A0B2E; text-decoration: none; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 22px; border-radius: 999px; padding: 12px 28px">Listen!</a>
+<a href="#listen" class="pill" style="background: #7B52A3; color: #FFFFFF; text-decoration: none; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 22px; border-radius: 999px; padding: 12px 28px">Listen!</a>
 </div>
 </nav>
 </header>
@@ -94,11 +94,11 @@ Start listening
 </div>
 
 <div class="mascot-wrap reveal d1" style="flex: 1 1 420px; min-width: 0; position: relative; display: flex; justify-content: center; align-items: center; min-height: 520px">
-<svg width="560" height="520" viewBox="0 0 560 520" aria-hidden="true" style="position: absolute; max-width: 100%">
-<path d="M40 380c60-120 160 40 240-60s120-200 240-120" fill="none" stroke="#C3D85A" stroke-width="34" stroke-linecap="round"></path>
+<svg width="560" height="520" viewBox="0 0 560 520" aria-hidden="true" style="position: absolute; max-width: 100%; z-index: 2; pointer-events: none">
+<path id="vine" d="M40 380c60-120 160 40 240-60s120-200 240-120" fill="none" stroke="#C3D85A" stroke-width="34" stroke-linecap="round" stroke-linejoin="round"></path>
 </svg>
 <div style="position: relative; width: 420px; height: 420px; max-width: 86vw; max-height: 86vw; border-radius: 999px; background: #D07AC8; display: flex; align-items: center; justify-content: center">
-<button type="button" class="mascot" id="mascot" aria-label="Make the mushroom mascot sing" style="position: relative; border: 0; background: transparent; padding: 0; border-radius: 999px">
+<button type="button" class="mascot" id="mascot" aria-label="Make the mushroom mascot sing" style="position: relative; z-index: 3; border: 0; background: transparent; padding: 0; border-radius: 999px">
 <img class="calm" src="images/mycowave-mascot.png" alt="" style="width: 340px; height: 340px; max-width: 70vw; max-height: 70vw; object-fit: contain; display: block">
 <img class="happy" src="images/mycowave-mascot-happy.png" alt="" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; object-fit: contain; display: block">
 <span class="notes" aria-hidden="true" style="position: absolute; left: -36px; top: 40px; display: flex; flex-direction: column; gap: 18px">
@@ -107,7 +107,7 @@ Start listening
 </span>
 </button>
 </div>
-<div class="bubble" id="bubble" aria-live="polite" style="position: absolute; top: 24px; right: 8px; background: #1A0B2E; color: #FFFFFF; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 26px; border-radius: 28px 28px 28px 6px; padding: 14px 24px">Psst… tap me!</div>
+<div class="bubble" id="bubble" aria-live="polite" style="position: absolute; z-index: 3; top: 24px; right: 8px; background: #1A0B2E; color: #FFFFFF; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 26px; border-radius: 28px 28px 28px 6px; padding: 14px 24px">Psst… tap me!</div>
 </div>
 </div>
 </section>
@@ -265,12 +265,79 @@ Start listening
     }
   } catch (err) { document.documentElement.classList.remove('armed'); }
 
-  // ---------- Hero mascot: tap to sing (hover handled in CSS)
+  // ---------- Green vine: wiggles like a sine wave while the mascot sings
+  var vine = document.getElementById('vine');
+  var VINE_D = vine.getAttribute('d');
+  var VINE = {
+    amp: 18,      // how far the vine swings (px)
+    waves: 2.5,   // how many wave bumps along the vine
+    speed: 1.6,   // waves travelling per second
+    ease: 700     // ms to go from still to moving (and back)
+  };
+  var vinePts = null, vineAmp = 0, vineFrom = 0, vineTo = 0, vineT0 = 0, vineRaf = 0;
+
+  // Same maths as CSS cubic-bezier(x1, y1, x2, y2)
+  function cubicBezier(x1, y1, x2, y2) {
+    return function (x) {
+      var t = x;
+      for (var k = 0; k < 6; k++) {
+        var cx = 3 * x1 * t * (1 - t) * (1 - t) + 3 * x2 * t * t * (1 - t) + t * t * t - x;
+        var dx = 3 * x1 * (1 - t) * (1 - t) + 6 * (x2 - x1) * t * (1 - t) + 3 * (1 - x2) * t * t;
+        if (Math.abs(dx) < 1e-6) break;
+        t = Math.min(1, Math.max(0, t - cx / dx));
+      }
+      return 3 * y1 * t * (1 - t) * (1 - t) + 3 * y2 * t * t * (1 - t) + t * t * t;
+    };
+  }
+  var vineEase = cubicBezier(0.65, 0, 0.35, 1); // smooth ease-in-out
+
+  function sampleVine() {
+    var L = vine.getTotalLength(), n = 90, pts = [];
+    for (var k = 0; k <= n; k++) {
+      var len = L * k / n, p = vine.getPointAtLength(len);
+      var a = vine.getPointAtLength(Math.max(0, len - 1)), b = vine.getPointAtLength(Math.min(L, len + 1));
+      var dx = b.x - a.x, dy = b.y - a.y, m = Math.hypot(dx, dy) || 1;
+      pts.push({ x: p.x, y: p.y, nx: -dy / m, ny: dx / m, u: k / n });
+    }
+    return pts;
+  }
+
+  function vineFrame(now) {
+    if (!vinePts) vinePts = sampleVine();
+    var p = Math.min(1, (now - vineT0) / VINE.ease);
+    vineAmp = vineFrom + (vineTo - vineFrom) * vineEase(p);
+    var phase = now / 1000 * VINE.speed * 2 * Math.PI, d = '';
+    vinePts.forEach(function (pt, k) {
+      var env = 0.35 + 0.65 * Math.sin(Math.PI * pt.u); // ends move a little less
+      var off = vineAmp * VINE.amp * env * Math.sin(pt.u * VINE.waves * 2 * Math.PI - phase);
+      d += (k ? 'L' : 'M') + (pt.x + pt.nx * off).toFixed(1) + ' ' + (pt.y + pt.ny * off).toFixed(1);
+    });
+    vine.setAttribute('d', d);
+    if (p < 1 || vineTo > 0) vineRaf = requestAnimationFrame(vineFrame);
+    else { vine.setAttribute('d', VINE_D); vineRaf = 0; }
+  }
+
+  function vineWave(on) {
+    if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    vineFrom = vineAmp; vineTo = on ? 1 : 0; vineT0 = performance.now();
+    if (!vineRaf) vineRaf = requestAnimationFrame(vineFrame);
+  }
+
+  // ---------- Hero mascot: click to sing (hover face handled in CSS)
   var mascot = document.getElementById('mascot');
   var bubble = document.getElementById('bubble');
-  mascot.addEventListener('click', function () {
-    var on = mascot.classList.toggle('singing');
+  function mascotSing(on) {
+    mascot.classList.toggle('singing', on);
     bubble.textContent = on ? 'La la laaa!' : 'Psst… tap me!';
+    vineWave(on);
+  }
+  mascot.addEventListener('click', function () {
+    if (mascot.classList.contains('singing')) {
+      stopAudio(); // its callback turns the singing off
+    } else {
+      mascotSing(true);
+      playClip(SOUND.file, function () { mascotSing(false); });
+    }
   });
 
   // ---------- Mushroom carousel
@@ -313,7 +380,7 @@ Start listening
   };
   var audioEl = new Audio();
   audioEl.preload = 'auto';
-  var actx = null, gainNode = null, clipTimer = null, clipId = 0;
+  var actx = null, gainNode = null, clipTimer = null, clipId = 0, currentDone = null;
 
   // Web Audio gives smooth fades on every browser (including iPhones/iPads,
   // which ignore the normal audio volume setting).
@@ -328,10 +395,12 @@ Start listening
     gainNode.connect(actx.destination);
   }
 
-  function playClip(src, onDone) {
+  function playClip(src, onDoneCb) {
     stopAudio();
     setupAudio();
     var myId = ++clipId;
+    currentDone = onDoneCb;
+    var onDone = function () { if (currentDone === onDoneCb) currentDone = null; onDoneCb(); };
     if (audioEl.getAttribute('src') !== src) audioEl.src = src;
 
     var begin = function () {
@@ -369,6 +438,8 @@ Start listening
   function stopAudio() {
     var myId = ++clipId;
     clearTimeout(clipTimer);
+    var cb = currentDone; currentDone = null;
+    if (cb) cb(); // tell whoever was playing (mascot or carousel) that it stopped
     if (audioEl.paused) return;
     if (actx) {
       var t = actx.currentTime, g = gainNode.gain;
