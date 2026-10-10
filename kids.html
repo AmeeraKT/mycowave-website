@@ -280,7 +280,7 @@ Start listening
     { name: 'Chocolate Oyster', img: 'images/chocolate-oyster.png', line: 'I’m brown like hot chocolate, but don’t drink me!', alt: 'Smiling chocolate oyster mushroom', bg: '#EFE7F7', accent: '#B79BD6', stroke: '#7B52A3', amp: 40, len: 180, audio: '' },
     { name: 'Pompom', img: 'images/pompom.png', line: 'I’m fluffy and soft, like a pompom!', alt: 'Smiling white pompom mushroom', bg: '#F1F6D6', accent: '#C3D85A', stroke: '#5E6E12', amp: 26, len: 80, audio: '' }
   ];
-  var i = 0, playing = false, moves = 0, player = null;
+  var i = 0, playing = false, moves = 0;
   var $ = function (id) { return document.getElementById(id); };
 
   function wave(amp, len) {
@@ -299,7 +299,87 @@ Start listening
     dotsBox.appendChild(b);
   });
 
-  function stopAudio() { if (player) { player.pause(); player.currentTime = 0; } }
+  // ---------- Mushroom sound clips
+  // Every click plays a random 10-second section of the recording,
+  // fading in quickly at the start and fading out gently at the end.
+  var SOUND = {
+    file: 'sounds/BlueOysterMushroomSoundsbyMycoLocoYT.mp3',
+    rangeStart: 0,          // earliest second a clip may start (e.g. 1:30 = 90)
+    rangeEnd: 4 * 60 + 49,  // latest second a clip may end (4:49 = 289)
+    clipLength: 10,         // seconds per clip
+    fadeIn: 0.5,            // seconds from silent to full volume
+    fadeOut: 1.5,           // seconds from full volume to silent at the end
+    volume: 0.35            // 0 = silent, 1 = full. Change this if it's too loud or quiet.
+  };
+  var audioEl = new Audio();
+  audioEl.preload = 'auto';
+  var actx = null, gainNode = null, clipTimer = null, clipId = 0;
+
+  // Web Audio gives smooth fades on every browser (including iPhones/iPads,
+  // which ignore the normal audio volume setting).
+  function setupAudio() {
+    if (actx) return;
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return; // very old browsers: plays without fades
+    actx = new AC();
+    gainNode = actx.createGain();
+    gainNode.gain.value = 0;
+    actx.createMediaElementSource(audioEl).connect(gainNode);
+    gainNode.connect(actx.destination);
+  }
+
+  function playClip(src, onDone) {
+    stopAudio();
+    setupAudio();
+    var myId = ++clipId;
+    if (audioEl.getAttribute('src') !== src) audioEl.src = src;
+
+    var begin = function () {
+      if (myId !== clipId) return;
+      var end = Math.min(SOUND.rangeEnd, audioEl.duration || SOUND.rangeEnd);
+      var latestStart = Math.max(SOUND.rangeStart, end - SOUND.clipLength);
+      audioEl.currentTime = SOUND.rangeStart + Math.random() * (latestStart - SOUND.rangeStart);
+      if (actx) actx.resume(); else audioEl.volume = SOUND.volume;
+
+      audioEl.play().then(function () {
+        if (myId !== clipId) return;
+        if (actx) {
+          var t = actx.currentTime, g = gainNode.gain;
+          g.cancelScheduledValues(t);
+          g.setValueAtTime(0, t);
+          g.linearRampToValueAtTime(SOUND.volume, t + SOUND.fadeIn);                 // fade in
+          g.setValueAtTime(SOUND.volume, t + SOUND.clipLength - SOUND.fadeOut);
+          g.linearRampToValueAtTime(0, t + SOUND.clipLength);                        // fade out
+        }
+        clipTimer = setTimeout(function () {
+          if (myId !== clipId) return;
+          audioEl.pause();
+          onDone();
+        }, SOUND.clipLength * 1000);
+      }).catch(function () { if (myId === clipId) onDone(); });
+    };
+
+    audioEl.addEventListener('error', function () { if (myId === clipId) onDone(); }, { once: true });
+    if (audioEl.readyState >= 1) begin();
+    else audioEl.addEventListener('loadedmetadata', begin, { once: true });
+  }
+
+  // Stops early (when the mushroom is clicked again or the carousel moves),
+  // with a quick 0.3-second fade so it doesn't cut off with a "click".
+  function stopAudio() {
+    var myId = ++clipId;
+    clearTimeout(clipTimer);
+    if (audioEl.paused) return;
+    if (actx) {
+      var t = actx.currentTime, g = gainNode.gain;
+      g.cancelScheduledValues(t);
+      g.setValueAtTime(g.value, t);
+      g.linearRampToValueAtTime(0, t + 0.3);
+      setTimeout(function () { if (myId === clipId) audioEl.pause(); }, 300);
+    } else {
+      audioEl.pause();
+    }
+  }
 
   function render(dir) {
     var n = M.length, m = M[i], pm = M[(i + n - 1) % n], nm = M[(i + 1) % n];
@@ -332,10 +412,10 @@ Start listening
 
   $('star').addEventListener('click', function () {
     playing = !playing;
-    var src = M[i].audio;
-    if (src) {
-      if (playing) { player = new Audio(src); player.onended = function () { playing = false; render(''); }; player.play(); }
-      else stopAudio();
+    if (playing) {
+      playClip(M[i].audio || SOUND.file, function () { playing = false; render(''); });
+    } else {
+      stopAudio();
     }
     render('');
   });
