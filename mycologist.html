@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MycoWave – Mycologist viewer</title>
+<link rel="icon" href="images/mycowave-mascot.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F7F7F8}
+a{color:#7B52A3}a:hover{color:#5E3D80}
+.ui{transition:background-color .2s ease,color .2s ease,border-color .2s ease}
+.row:hover{background:#F1F0F3}
+.tab:hover{color:#18161C}
+.ghost:hover{background:#F1F0F3}
+.ui:focus-visible{outline:2px solid #7B52A3;outline-offset:2px}
+.live{animation:pulse 1.6s ease-out infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(123,82,163,.45)}100%{box-shadow:0 0 0 8px rgba(123,82,163,0)}}
+.fade{animation:fade .25s cubic-bezier(.22,1,.36,1)}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.live,.fade{animation:none}}
+[hidden]{display:none !important}
+</style>
+</head>
+<body>
+<div style="min-height: 100vh; font-family: 'Lexend', sans-serif; color: #18161C; background: #F7F7F8; font-size: 14px; line-height: 1.5">
+
+<!-- TOP BAR -->
+<header style="background: #FFFFFF; border-bottom: 1px solid #E8E6EB; padding: 0 24px">
+<div style="max-width: 1440px; margin: 0 auto; min-height: 60px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
+<div style="display: flex; align-items: center; gap: 12px">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#18161C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12c2-4 4-4 6 0s4 4 6 0 4-4 6 0"></path></svg>
+<span style="font-weight: 600; font-size: 15px">MycoWave</span>
+<span style="color: #B9B4C0">/</span>
+<span style="color: #6B6673">Mycologist viewer</span>
+</div>
+<div style="display: flex; align-items: center; gap: 12px">
+<label style="position: relative; display: flex; align-items: center">
+<span style="position: absolute; left: 12px; display: flex">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8C8794" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+</span>
+<input type="search" aria-label="Search observations" placeholder="Search observations" style="font: inherit; width: 240px; height: 36px; box-sizing: border-box; padding: 0 12px 0 36px; border: 1px solid #E8E6EB; border-radius: 8px; background: #F7F7F8; color: #18161C">
+</label>
+<a href="kids.html" class="ui ghost" style="color: #18161C; text-decoration: none; height: 36px; display: flex; align-items: center; padding: 0 14px; border: 1px solid #E8E6EB; border-radius: 8px">Kid mode</a>
+</div>
+</div>
+</header>
+
+<div style="max-width: 1440px; margin: 0 auto; padding: 24px; box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: flex-start; gap: 24px">
+
+<!-- SIDEBAR: observations -->
+<aside aria-label="Observations" style="flex: 1 1 260px; max-width: 300px; min-width: 0; background: #FFFFFF; border: 1px solid #E8E6EB; border-radius: 12px; overflow: hidden">
+<div style="padding: 16px 16px 8px; display: flex; align-items: center; justify-content: space-between">
+<span style="font-weight: 500; font-size: 13px; color: #6B6673; text-transform: uppercase; letter-spacing: 0.06em">Observations</span>
+<span style="font-size: 12px; color: #8C8794">3</span>
+</div>
+<div id="obsList" style="display: flex; flex-direction: column; padding: 0 8px 8px; gap: 2px">
+
+</div>
+</aside>
+
+<!-- MAIN -->
+<main style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+
+<!-- title row -->
+<div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 4px">
+<div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
+<h1 style="margin: 0; font-weight: 500; font-size: 24px; letter-spacing: -0.01em"><span data-bind="cur.name"></span></h1>
+<span style="font-weight: 300; font-style: italic; font-size: 16px; color: #6B6673"><span data-bind="cur.latin"></span></span>
+</div>
+<span style="font-size: 13px; color: #6B6673"><span data-bind="cur.pack"></span></span>
+</div>
+<div data-if="cur.has">
+<div style="display: flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 999px; background: #F3EEF8; color: #5E3D80; font-size: 13px; font-weight: 500">
+<span class="live" style="width: 8px; height: 8px; border-radius: 999px; background: #7B52A3"></span>
+<span>Live · last sample <span data-bind="ago"></span>s ago</span>
+</div>
+</div>
+</div>
+
+<div data-if="cur.has">
+<div style="background: #FFFFFF; border: 1px solid #E8E6EB; border-radius: 12px; overflow: hidden">
+<!-- tabs -->
+<div role="tablist" aria-label="Observation views" style="display: flex; gap: 4px; padding: 0 16px; border-bottom: 1px solid #E8E6EB">
+<button type="button" role="tab" class="ui tab" data-tab="overview" aria-selected="false">Overview</button><button type="button" role="tab" class="ui tab" data-tab="photo" aria-selected="false">Photo</button><button type="button" role="tab" class="ui tab" data-tab="signal" aria-selected="false">Signal</button>
+</div>
+
+<!-- OVERVIEW -->
+<div data-if="isOverview">
+<div class="fade" style="padding: 20px; display: flex; flex-direction: column; gap: 20px">
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px">
+<figure style="margin: 0; display: flex; flex-direction: column; gap: 8px">
+<div style="aspect-ratio: 16 / 9; border-radius: 8px; overflow: hidden; background: #F1F0F3">
+<img src="images/pink-oyster-pack1-photo.jpg" alt="Pink oyster mushroom pack 1 in a jar, wired to the recording device" style="width: 100%; height: 100%; object-fit: cover; display: block">
+</div>
+<figcaption style="display: flex; justify-content: space-between; font-size: 12px; color: #6B6673"><span>Latest photo</span><button type="button" class="ui" data-go="photo" style="font: inherit; font-size: 12px; border: 0; background: none; padding: 0; color: #7B52A3; cursor: pointer">View full size</button></figcaption>
+</figure>
+<figure style="margin: 0; display: flex; flex-direction: column; gap: 8px">
+<div style="aspect-ratio: 16 / 9; border-radius: 8px; overflow: hidden; background: #FFFFFF; border: 1px solid #E8E6EB; box-sizing: border-box; display: flex; align-items: center">
+<img src="images/pink-oyster-pack1-signal.jpg" alt="Signal plot of ADC1 voltage over 12.6 minutes, with repeated sharp spikes on a slowly falling baseline" style="width: 100%; height: auto; display: block">
+</div>
+<figcaption style="display: flex; justify-content: space-between; font-size: 12px; color: #6B6673"><span>Signal · ADC1</span><button type="button" class="ui" data-go="signal" style="font: inherit; font-size: 12px; border: 0; background: none; padding: 0; color: #7B52A3; cursor: pointer">Open signal</button></figcaption>
+</figure>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: #E8E6EB; border: 1px solid #E8E6EB; border-radius: 8px; overflow: hidden">
+<div style="background: #FFFFFF; padding: 14px 16px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12px; color: #6B6673">Duration</span><span style="font-size: 18px; font-weight: 500">12.6 min</span></div>
+<div style="background: #FFFFFF; padding: 14px 16px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12px; color: #6B6673">Samples</span><span style="font-size: 18px; font-weight: 500">600</span></div>
+<div style="background: #FFFFFF; padding: 14px 16px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12px; color: #6B6673">Min</span><span style="font-size: 18px; font-weight: 500">−188.203 mV</span></div>
+<div style="background: #FFFFFF; padding: 14px 16px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12px; color: #6B6673">Max</span><span style="font-size: 18px; font-weight: 500">−187.060 mV</span></div>
+</div>
+</div>
+</div>
+
+<!-- PHOTO -->
+<div data-if="isPhoto">
+<div class="fade" style="padding: 20px; display: flex; flex-direction: column; gap: 12px">
+<div style="aspect-ratio: 16 / 9; border-radius: 8px; overflow: hidden; background: #F1F0F3">
+<img src="images/pink-oyster-pack1-photo.jpg" alt="Pink oyster mushroom pack 1 in a jar, wired to the recording device" style="width: 100%; height: 100%; object-fit: contain; display: block">
+</div>
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; font-size: 13px; color: #6B6673">
+<span>Before and during recording · Feb 5, 2026, 01:40–01:53 AEST</span>
+<span>CC licensed · via iNaturalist</span>
+</div>
+</div>
+</div>
+
+<!-- SIGNAL -->
+<div data-if="isSignal">
+<div class="fade" style="padding: 20px; display: flex; flex-direction: column; gap: 16px">
+<div style="border: 1px solid #E8E6EB; border-radius: 8px; overflow: hidden">
+<img src="images/pink-oyster-pack1-signal.jpg" alt="Signal plot of ADC1 voltage over 12.6 minutes, with repeated sharp spikes on a slowly falling baseline" style="width: 100%; height: auto; display: block">
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding: 12px 16px; border: 1px solid #E8E6EB; border-radius: 8px">
+<button type="button" class="ui" id="btnPlay" aria-label="Play sonification" style="width: 44px; height: 44px; flex: 0 0 auto; border-radius: 999px; border: 0; background: #7B52A3; cursor: pointer; display: flex; align-items: center; justify-content: center">
+<span data-if="notPlaying" style="display: flex">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="#FFFFFF"><path d="M8 5.5v13a1 1 0 001.5.86l10.5-6.5a1 1 0 000-1.72L9.5 4.64A1 1 0 008 5.5z"></path></svg>
+</span>
+<span data-if="playing" style="display: flex">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="#FFFFFF"><rect x="6" y="5" width="4" height="14" rx="1.5"></rect><rect x="14" y="5" width="4" height="14" rx="1.5"></rect></svg>
+</span>
+</button>
+<div style="flex: 1 1 240px; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+<div style="display: flex; justify-content: space-between; font-size: 12px; color: #6B6673"><span>Sonification · ADC1</span><span><span data-bind="timeText"></span> / 12:36</span></div>
+<div style="height: 4px; border-radius: 999px; background: #E8E6EB; overflow: hidden"><div id="bar" style="height: 100%; width: 0%; background: #7B52A3"></div></div>
+</div>
+<button type="button" class="ui ghost" style="font: inherit; font-size: 13px; height: 36px; padding: 0 14px; border: 1px solid #E8E6EB; border-radius: 8px; background: #FFFFFF; color: #18161C; cursor: pointer; display: flex; align-items: center; gap: 8px">
+<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#18161C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"></path><path d="M7 10l5 5 5-5"></path><path d="M5 20h14"></path></svg>
+Download CSV
+</button>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: #E8E6EB; border: 1px solid #E8E6EB; border-radius: 8px; overflow: hidden">
+<div style="background: #FFFFFF; padding: 14px 16px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12px; color: #6B6673">Channel</span><span style="font-size: 15px; font-weight: 500">ADC1 (green/white)</span></div>
+<div style="background: #FFFFFF; padding: 14px 16px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12px; color: #6B6673">Window</span><span style="font-size: 15px; font-weight: 500">01:40:35–01:53:12</span></div>
+<div style="background: #FFFFFF; padding: 14px 16px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12px; color: #6B6673">Samples</span><span style="font-size: 15px; font-weight: 500">600 (≈1.26 s apart)</span></div>
+<div style="background: #FFFFFF; padding: 14px 16px; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12px; color: #6B6673">Range</span><span style="font-size: 15px; font-weight: 500">1.143 mV</span></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- EMPTY STATE -->
+<div data-if="cur.empty">
+<div class="fade" style="background: #FFFFFF; border: 1px solid #E8E6EB; border-radius: 12px; padding: 64px 24px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center">
+<span style="width: 56px; height: 56px; border-radius: 999px; background: #F1F0F3; display: flex; align-items: center; justify-content: center">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6B6673" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12c2-4 4-4 6 0s4 4 6 0 4-4 6 0"></path></svg>
+</span>
+<h2 style="margin: 0; font-weight: 500; font-size: 16px">No recordings yet</h2>
+<p style="margin: 0; max-width: 360px; color: #6B6673">When a sensor is attached to this pack, its photos and signals will appear here automatically.</p>
+<a href="https://www.inaturalist.org/projects/the-underground-brain-mycowave-recordings" class="ui ghost" style="margin-top: 8px; color: #18161C; text-decoration: none; height: 36px; display: flex; align-items: center; padding: 0 14px; border: 1px solid #E8E6EB; border-radius: 8px">Browse all recordings</a>
+</div>
+</div>
+</main>
+
+<!-- DETAILS PANEL -->
+<aside aria-label="Observation details" style="flex: 1 1 300px; max-width: 340px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+<div style="background: #FFFFFF; border: 1px solid #E8E6EB; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 14px">
+<span style="font-weight: 500; font-size: 13px; color: #6B6673; text-transform: uppercase; letter-spacing: 0.06em">Details</span>
+<dl style="margin: 0; display: grid; grid-template-columns: 96px minmax(0, 1fr); row-gap: 10px; column-gap: 12px; font-size: 13px">
+<dt style="color: #6B6673">Species</dt><dd style="margin: 0"><span data-bind="cur.name"></span> <span style="font-style: italic; color: #6B6673"><span data-bind="cur.latin"></span></span></dd>
+<dt style="color: #6B6673">Observed</dt><dd style="margin: 0"><span data-bind="cur.observed"></span></dd>
+<dt style="color: #6B6673">Submitted</dt><dd style="margin: 0"><span data-bind="cur.submitted"></span></dd>
+<dt style="color: #6B6673">Observer</dt><dd style="margin: 0"><span data-bind="cur.observer"></span></dd>
+<dt style="color: #6B6673">Grade</dt><dd style="margin: 0"><span data-bind="cur.grade"></span></dd>
+</dl>
+</div>
+
+<div style="background: #FFFFFF; border: 1px solid #E8E6EB; border-radius: 12px; overflow: hidden">
+<div style="padding: 16px 16px 12px; display: flex; flex-direction: column; gap: 4px">
+<span style="font-weight: 500; font-size: 13px; color: #6B6673; text-transform: uppercase; letter-spacing: 0.06em">Location</span>
+<span style="font-size: 14px; display: flex; align-items: center; gap: 6px">
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#18161C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-12a7 7 0 0114 0c0 5.8-7 12-7 12z"></path><circle cx="12" cy="9" r="2.5"></circle></svg>
+<span data-bind="cur.place"></span>
+</span>
+</div>
+<svg viewBox="0 0 340 200" width="100%" role="img" aria-label="Map placeholder showing the recording site in St Lucia, Brisbane" style="display: block; background: #EFEEF1">
+<path d="M-10 150 C 60 120, 90 170, 150 140 S 250 60, 350 90" fill="none" stroke="#DCD9E0" stroke-width="22" stroke-linecap="round"></path>
+<path d="M0 60 H340 M0 112 H340 M70 0 V200 M190 0 V200 M280 0 V200" stroke="#FFFFFF" stroke-width="4"></path>
+<path d="M20 0 L140 200 M240 0 L320 200" stroke="#FFFFFF" stroke-width="2.5"></path>
+<circle cx="182" cy="96" r="18" fill="#7B52A3" fill-opacity="0.15"></circle>
+<circle cx="182" cy="96" r="7" fill="#7B52A3" stroke="#FFFFFF" stroke-width="3"></circle>
+<text x="12" y="190" font-family="Lexend, sans-serif" font-size="10" fill="#8C8794">Map preview</text>
+</svg>
+<div style="padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; font-size: 13px">
+<span style="color: #6B6673">Brisbane, QLD</span>
+<a href="https://www.inaturalist.org/projects/the-underground-brain-mycowave-recordings" style="text-decoration: none">Open in iNaturalist</a>
+</div>
+</div>
+</aside>
+</div>
+</div>
+<script>
+(function () {
+  var O = [
+    { name: 'Pink Oyster', latin: 'Pleurotus djamor', pack: 'Pack 1 · UQ Biome Project', thumb: 'images/pink-oyster.png', sub: 'Pack 1 · recording', has: true, observed: 'Feb 5, 2026 · 1:40 AM AEST', submitted: 'Feb 12, 2026 · 9:48 AM AEST', observer: 'shafakirrn', grade: 'Casual', place: 'University of Queensland, St Lucia' },
+    { name: 'Chocolate Oyster', latin: '[Latin name]', pack: 'Pack [#]', thumb: 'images/chocolate-oyster.png', sub: 'No recordings yet', has: false, observed: '—', submitted: '—', observer: '—', grade: '—', place: '[Location]' },
+    { name: 'Pompom', latin: '[Latin name]', pack: 'Pack [#]', thumb: 'images/pompom.png', sub: 'No recordings yet', has: false, observed: '—', submitted: '—', observer: '—', grade: '—', place: '[Location]' }
+  ];
+  var S = { sel: 0, tab: 'overview', playing: false, pos: 0, ago: 0 };
+  var TOTAL = 756; // 12:36 in seconds
+
+  // sidebar
+  var list = document.getElementById('obsList');
+  O.forEach(function (o, j) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'ui row';
+    b.style.cssText = 'font:inherit;width:100%;border:0;cursor:pointer;display:flex;align-items:center;gap:12px;padding:10px;border-radius:8px;min-height:56px';
+    b.innerHTML =
+      '<span style="width:40px;height:40px;flex:0 0 auto;border-radius:8px;background:#F1F0F3;display:flex;align-items:center;justify-content:center;overflow:hidden"><img src="' + o.thumb + '" alt="" style="width:34px;height:34px;object-fit:contain"></span>' +
+      '<span style="flex:1 1 auto;min-width:0;display:flex;flex-direction:column;text-align:left"><span style="font-weight:500;font-size:14px;color:#18161C">' + o.name + '</span><span style="font-size:12px;color:#6B6673">' + o.sub + '</span></span>' +
+      '<span aria-label="' + (o.has ? 'Live' : 'Idle') + '" style="width:8px;height:8px;flex:0 0 auto;border-radius:999px;background:' + (o.has ? '#7B52A3' : '#D4D0D9') + '"></span>';
+    b.addEventListener('click', function () { S.sel = j; S.tab = 'overview'; S.playing = false; S.pos = 0; update(); });
+    list.appendChild(b);
+  });
+
+  document.querySelectorAll('[data-tab]').forEach(function (t) {
+    t.addEventListener('click', function () { S.tab = t.getAttribute('data-tab'); update(); });
+  });
+  document.querySelectorAll('[data-go]').forEach(function (t) {
+    t.addEventListener('click', function () { S.tab = t.getAttribute('data-go'); update(); });
+  });
+  document.getElementById('btnPlay').addEventListener('click', function () { S.playing = !S.playing; update(); });
+
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+
+  function update() {
+    var cur = O[S.sel];
+    var vals = {
+      'cur.has': cur.has, 'cur.empty': !cur.has,
+      isOverview: S.tab === 'overview', isPhoto: S.tab === 'photo', isSignal: S.tab === 'signal',
+      playing: S.playing, notPlaying: !S.playing
+    };
+    document.querySelectorAll('[data-if]').forEach(function (el) { el.hidden = !vals[el.getAttribute('data-if')]; });
+    var text = {
+      'cur.name': cur.name, 'cur.latin': cur.latin, 'cur.pack': cur.pack, 'cur.observed': cur.observed,
+      'cur.submitted': cur.submitted, 'cur.observer': cur.observer, 'cur.grade': cur.grade, 'cur.place': cur.place,
+      ago: String(S.ago), timeText: pad(Math.floor(S.pos / 60)) + ':' + pad(S.pos % 60)
+    };
+    document.querySelectorAll('[data-bind]').forEach(function (el) { el.textContent = text[el.getAttribute('data-bind')]; });
+    Array.prototype.forEach.call(list.children, function (b, j) {
+      var on = j === S.sel;
+      b.style.background = on ? '#F3EEF8' : '#FFFFFF';
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+    document.querySelectorAll('[data-tab]').forEach(function (t) {
+      var on = t.getAttribute('data-tab') === S.tab;
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+      t.style.cssText = 'font:inherit;font-size:14px;border:0;background:none;cursor:pointer;padding:14px 12px 12px;margin-bottom:-1px;border-bottom:2px solid ' + (on ? '#7B52A3' : 'transparent') + ';color:' + (on ? '#18161C' : '#6B6673') + ';font-weight:' + (on ? 500 : 400);
+    });
+    var btn = document.getElementById('btnPlay');
+    btn.setAttribute('aria-label', S.playing ? 'Pause sonification' : 'Play sonification');
+    document.getElementById('bar').style.width = (S.pos / TOTAL * 100).toFixed(1) + '%';
+  }
+
+  // "Live" ticker (simulated) + player progress
+  setInterval(function () {
+    S.ago = (S.ago + 1) % 6;
+    if (S.playing) { S.pos = Math.min(S.pos + 1, TOTAL); if (S.pos === TOTAL) S.playing = false; }
+    update();
+  }, 1000);
+
+  update();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MycoWave – Hear the mushrooms</title>
+<link rel="icon" href="images/mycowave-mascot.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&amp;family=Lexend:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFFFFF}
+a{color:#7B52A3}a:hover{color:#5E3D80}
+.choice{transition:transform .25s cubic-bezier(.34,1.56,.64,1)}
+.choice:hover{transform:translateY(-8px) rotate(-1.5deg)}
+.choice:hover .bob{transform:rotate(-8deg) scale(1.06)}
+.bob{transition:transform .3s cubic-bezier(.34,1.56,.64,1)}
+.choice:focus-visible{outline:4px solid #1A0B2E;outline-offset:6px}
+[hidden]{display:none !important}
+</style>
+</head>
+<body>
+<main style="min-height: 100vh; box-sizing: border-box; padding: 48px 24px 64px; display: flex; flex-direction: column; align-items: center; gap: 48px; font-family: 'Lexend', sans-serif; color: #1A0B2E; background: #FFFFFF">
+<div style="width: 100%; max-width: 1180px; display: flex; align-items: center; justify-content: space-between">
+<div style="display: flex; align-items: center; gap: 12px; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 28px; color: #7B52A3">
+<span style="width: 44px; height: 44px; border-radius: 999px; background: #EFE7F7; display: flex; align-items: center; justify-content: center">
+<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#7B52A3" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12c2-4 4-4 6 0s4 4 6 0 4-4 6 0"></path></svg>
+</span>
+MycoWave
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; max-width: 900px">
+<p style="margin: 0; font-size: 22px; font-weight: 500; color: #7B52A3">Help us make this just right for you!</p>
+<h1 style="margin: 0; font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: clamp(56px, 8vw, 104px); line-height: 1; letter-spacing: -0.01em">Are you a…</h1>
+</div>
+
+<div style="width: 100%; max-width: 1080px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px">
+<a href="kids.html" class="choice" style="text-decoration: none; color: #1A0B2E; background: #D07AC8; border-radius: 40px; padding: 40px 32px 44px; display: flex; flex-direction: column; align-items: center; gap: 20px; min-height: 420px; box-sizing: border-box">
+<div class="bob" style="width: 220px; height: 220px; border-radius: 999px; background: #F7E6F4; display: flex; align-items: center; justify-content: center">
+<img src="images/mycowave-mascot.png" alt="MycoWave mushroom mascot" style="width: 180px; height: 180px; object-fit: contain">
+</div>
+<span style="font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 64px; line-height: 1">Kid</span>
+<span style="font-size: 22px; font-weight: 500">Let’s listen to mushrooms!</span>
+<span style="margin-top: 4px; background: #1A0B2E; color: #FFFFFF; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 24px; border-radius: 999px; padding: 14px 32px; display: flex; align-items: center; gap: 10px">
+Start
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M13 6l6 6-6 6"></path></svg>
+</span>
+</a>
+
+<a href="mycologist.html" class="choice" style="text-decoration: none; color: #FFFFFF; background: #7B52A3; border-radius: 40px; padding: 40px 32px 44px; display: flex; flex-direction: column; align-items: center; gap: 20px; min-height: 420px; box-sizing: border-box">
+<div class="bob" style="position: relative; width: 220px; height: 220px; border-radius: 999px; background: #EFE7F7; display: flex; align-items: center; justify-content: center">
+<img src="images/mycowave-mascot.png" alt="MycoWave mushroom mascot wearing science goggles" style="width: 180px; height: 180px; object-fit: contain">
+<svg width="76" height="30" viewBox="0 0 76 30" style="position: absolute; left: 74px; top: 113px" aria-hidden="true">
+<path d="M0 15h9M67 15h9" stroke="#1A0B2E" stroke-width="4" stroke-linecap="round"></path>
+<circle cx="22" cy="15" r="12" fill="#C3D85A" fill-opacity="0.5" stroke="#1A0B2E" stroke-width="4"></circle>
+<circle cx="54" cy="15" r="12" fill="#C3D85A" fill-opacity="0.5" stroke="#1A0B2E" stroke-width="4"></circle>
+<path d="M34 15h8" stroke="#1A0B2E" stroke-width="4" stroke-linecap="round"></path>
+</svg>
+</div>
+<span style="font-family: 'Fredoka', sans-serif; font-weight: 700; font-size: 64px; line-height: 1">Mycologist</span>
+<span style="font-size: 22px; font-weight: 500">Data, recordings and the deep science</span>
+<span style="margin-top: 4px; background: #C3D85A; color: #1A0B2E; font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 24px; border-radius: 999px; padding: 14px 32px; display: flex; align-items: center; gap: 10px">
+Enter
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1A0B2E" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M13 6l6 6-6 6"></path></svg>
+</span>
+</a>
+</div>
+
+<p style="margin: 0; font-size: 18px; color: #4A3A5C; text-align: center">You can switch any time from the bottom of the page.</p>
+</main>
+
+</body>
+</html>
